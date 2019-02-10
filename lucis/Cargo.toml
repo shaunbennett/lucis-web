@@ -5,11 +5,16 @@ license = "MIT"
 name = "lucis"
 readme = "./README.md"
 version = "0.0.1"
+edition = "2018"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
+# Lucis Specific
+nalgebra = "0.16.10"
+roots = "0.0.4"
+
 cfg-if = "0.1.5"
 wasm-bindgen = "0.2.25"
 
@@ -32,6 +37,15 @@ features = [
   "HtmlElement",
   "Node",
   "Window",
+  "ImageData",
+  "HtmlCanvasElement",
+  "CanvasRenderingContext2d",
+]
+
+[dependencies.rand]
+version = "0.6.5"
+features = [
+  "wasm-bindgen"
 ]
 
 [features]
