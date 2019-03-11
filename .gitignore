@@ -1,9 +1,0 @@
-node_modules
-lucis/bin
-lucis/pkg
-lucis/target
-lucis/wasm-pack.log
-lucis/Cargo.lock
-.DS_Store
-.idea/
-.vscode/
