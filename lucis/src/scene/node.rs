@@ -78,9 +78,9 @@ impl Material {
 
 #[wasm_bindgen]
 pub struct Scene {
-    nodes: Rc<RefCell<Vec<SceneNode>>>,
+    pub(crate) nodes: Rc<RefCell<Vec<SceneNode>>>,
     // Index in the nodes vec of the root node
-    root_node: usize,
+    pub(crate) root_node: usize,
 }
 
 #[wasm_bindgen]
@@ -119,6 +119,8 @@ impl Scene {
         let id = self.nodes.borrow().len();
         let mut node = SceneNode::new(id, name);
         node.primitive = Primitive::Sphere;
+        // rt.material({0.9, 0.8, 0.4}, {0.8, 0.8, 0.4}, 25)
+        node.material = Material::phong(Color::new(0.96, 0.37, 0.1), Color::new(0.7, 0.7, 0.7), 6.0);
         self.nodes.borrow_mut().push(node);
         return SceneNodeRef {
             id: id,

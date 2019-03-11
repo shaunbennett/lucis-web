@@ -60,14 +60,16 @@ const Z_NEAR: f32 = -1.0;
 impl Raytracer {
     #[wasm_bindgen(constructor)]
     pub fn new(scene: Scene) -> Raytracer {
+        let light = Light::new(Color::new(0.5, 0.5, 0.5), Point3::new(4.0, 5.0, 0.0), [1.0, 0.0005, 0.0], 0.0, 1);
         Raytracer {
             scene: scene,
             eye: Point3::new(0.0, 0.0, 0.0),
             view: Point3::new(0.0, 0.0, -1.0),
             up: Vector3::new(0.0, 1.0, 0.0),
             fov_y: 30.,
-            ambient: Color::new(0.4, 0.4, 0.4),
-            lights: Vec::new(),
+            ambient: Color::new(0.3, 0.3, 0.3),
+            // lights: vec![],
+            lights: vec![light],
             volumes: Vec::new(),
         }
     }
@@ -152,8 +154,7 @@ impl Raytracer {
         let collision = self.scene.intersects(ray);
         match collision {
             Some(c) => {
-                // let mut color = c.node.material.get_color(ray, self, &c);
-                let mut color = Color::new(1.0, 0.0, 0.0);
+                let mut color = self.scene.nodes.borrow()[c.node_id].material.get_color(ray, self, &c);
                 // for volume in self.volumes.iter() {
                 //     // TODO: don't do this
                 //     color = volume.apply(ray, &collision, color)

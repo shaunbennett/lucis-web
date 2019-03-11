@@ -2,21 +2,11 @@
 
 import { Scene, Raytracer } from '../lucis/pkg'
 
-//import("../lucis/pkg").then(module => {
-//  let raytracer = new module.Raytracer();
-//  raytracer.create_root();
-//  let data = raytracer.render(100, 100);
-//  console.log(data);
-//  //module.run();
-       
-//});
-
 // Initial warm_up run, makes the next run go much faster
 let iScene = new Scene()
 let ia = iScene.create_node('a')
 let ir = new Raytracer(iScene)
 ir.render(1, 1)
-
 
 let test_scene = new Scene()
 
@@ -33,10 +23,3 @@ a.translate(0, 0, -10)
 
 let raytracer = new Raytracer(test_scene)
 raytracer.render(800, 800)
-// var blob = new Blob(render, {'type': 'image/jpeg'});
-// var url = URL.createObjectURL(blob); //possibly `webkitURL` or another vendor prefix for old browsers.
-
-// let image = document.createElement('img')
-// image.src = url
-// document.body.append(image)
-
