@@ -3,33 +3,33 @@ use nalgebra::{Affine3, Point3, Vector3, U3};
 use std::cmp::{Ordering, PartialEq, PartialOrd};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Intersection<'a> {
+pub struct Intersection {
     // The t value for the ray where this collision occured. Can be used to calculate the intersection point
     pub t_value: f32,
     pub point: Point3<f32>,
-    pub node: &'a SceneNode,
+    pub node_id: usize,
     pub normal: Vector3<f32>,
     pub u_value: f32,
     pub v_value: f32,
 }
 
-impl<'a> PartialEq for Intersection<'a> {
+impl PartialEq for Intersection {
     fn eq(&self, other: &Intersection) -> bool {
         self.t_value == other.t_value
     }
 }
 
-impl<'a> PartialOrd for Intersection<'a> {
+impl PartialOrd for Intersection {
     fn partial_cmp(&self, other: &Intersection) -> Option<Ordering> {
         self.t_value.partial_cmp(&other.t_value)
     }
 }
 
-impl<'a> Intersection<'a> {
+impl Intersection {
     pub fn new(
         t_value: f32,
         point: Point3<f32>,
-        node: &'a SceneNode,
+        node_id: usize,
         normal: Vector3<f32>,
         u_value: f32,
         v_value: f32,
@@ -37,7 +37,7 @@ impl<'a> Intersection<'a> {
         Intersection {
             t_value,
             point,
-            node,
+            node_id,
             normal,
             u_value,
             v_value,
@@ -48,7 +48,7 @@ impl<'a> Intersection<'a> {
         self,
         transform: &Affine3<f32>,
         inv_transform: &Affine3<f32>,
-    ) -> Intersection<'a> {
+    ) -> Intersection {
         let inv_mat3_transpose = inv_transform
             .matrix()
             .fixed_resize::<U3, U3>(0.0f32)
@@ -58,7 +58,7 @@ impl<'a> Intersection<'a> {
         Intersection {
             t_value: self.t_value,
             point: transformed_point,
-            node: self.node,
+            node_id: self.node_id,
             normal: transformed_normal,
             u_value: self.u_value,
             v_value: self.v_value,

@@ -2,6 +2,9 @@ use crate::geometry::{Primitive, Ray};
 use crate::scene::{Color, Intersection};
 use crate::Raytracer;
 use nalgebra::{clamp, distance_squared, Affine3, Matrix4, Vector3};
+use std::cell::{Ref, RefCell};
+use std::rc::Rc;
+use wasm_bindgen::prelude::*;
 
 #[derive(Debug, Clone)]
 pub enum Material {
@@ -32,7 +35,7 @@ fn calculate_phong_lighting(
         let mut shadow_rays_hit = 0;
         for p in light.light_samples.iter() {
             let shadow_ray = Ray::new_from_points(intersect_point, *p);
-            if raytracer.root_node.intersects(&shadow_ray).is_none() {
+            if raytracer.scene.intersects(&shadow_ray).is_none() {
                 shadow_rays_hit += 1;
             }
         }
@@ -67,67 +70,76 @@ impl Material {
         match self {
             Material::PhongMaterial { kd, ks, shininess } => {
                 calculate_phong_lighting(kd, ks, *shininess, ray, raytracer, intersect)
-            },
+            }
             Material::None => Color::new(0.0, 0.0, 0.0),
         }
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct SceneNode {
-    pub id: u32,
-    pub children: Vec<SceneNode>,
-    pub transform: Affine3<f32>,
-    pub inv_transform: Affine3<f32>,
-    pub name: String,
-
-    // Material and Primitive
-    pub material: Material,
-    pub primitive: Primitive,
+#[wasm_bindgen]
+pub struct Scene {
+    nodes: Rc<RefCell<Vec<SceneNode>>>,
+    // Index in the nodes vec of the root node
+    root_node: usize,
 }
 
-impl SceneNode {
-    pub fn new(id: u32, name: String) -> SceneNode {
-        SceneNode {
-            id,
-            children: Vec::new(),
-            transform: Affine3::identity(),
-            inv_transform: Affine3::identity(),
-            name,
-            material: Material::None,
-            primitive: Primitive::None,
-        }
+#[wasm_bindgen]
+pub struct SceneNodeRef {
+    id: usize,
+    parent: Rc<RefCell<Vec<SceneNode>>>,
+}
+
+#[wasm_bindgen]
+impl SceneNodeRef {
+    pub fn add_child(&mut self, child: &SceneNodeRef) {
+        self.parent.borrow_mut()[self.id].add_child_id(child.id);
+    }
+    pub fn scale(&mut self, x: f32, y: f32, z: f32) {
+        self.parent.borrow_mut()[self.id].scale(x, y, z);
+    }
+    pub fn translate(&mut self, x: f32, y: f32, z: f32) {
+        self.parent.borrow_mut()[self.id].translate(x, y, z);
+    }
+    pub fn rotate(&mut self, axis: &str, angle: f32) {
+        self.parent.borrow_mut()[self.id].rotate(axis, angle);
     }
 }
 
-impl Intersect for SceneNode {
-    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        let transformed_ray = self.inv_transform * *ray;
+#[wasm_bindgen]
+impl Scene {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Scene {
+        Scene {
+            nodes: Rc::new(RefCell::new(Vec::new())),
+            root_node: 0,
+        }
+    }
 
-        let mut t_value: f32 = 0.0;
-        let mut normal = Vector3::new(0.0f32, 0.0, 0.0);
-        let mut uv = [0.0, 0.0];
-        let self_collides =
-            if self
-                .primitive
-                .collides(&transformed_ray, &mut t_value, &mut normal, &mut uv)
-            {
-                Some(Intersection::new(
-                    t_value,
-                    transformed_ray.src + (t_value * transformed_ray.dir.normalize()),
-                    &self,
-                    normal,
-                    uv[0],
-                    uv[1],
-                ))
-            } else {
-                None
-            };
+    pub fn create_node(&mut self, name: String) -> SceneNodeRef {
+        let id = self.nodes.borrow().len();
+        let mut node = SceneNode::new(id, name);
+        node.primitive = Primitive::Sphere;
+        self.nodes.borrow_mut().push(node);
+        return SceneNodeRef {
+            id: id,
+            parent: Rc::clone(&self.nodes),
+        };
+    }
 
-        let min = self
+    pub(crate) fn intersects(&self, ray: &Ray) -> Option<Intersection> {
+        Scene::intersects_recursive(self.nodes.borrow(), self.root_node, ray)
+    }
+
+    fn intersects_recursive(nodes: Ref<Vec<SceneNode>>, current_node: usize, ray: &Ray) -> Option<Intersection> {
+        let n = &nodes[current_node];
+        let transformed_ray = n.inv_transform * *ray;
+
+        let self_intersects = n.intersects(&transformed_ray);
+
+        let min = n
             .children
             .iter()
-            .map(|child| child.intersects(&transformed_ray))
+            .map(|c_id| Scene::intersects_recursive(Ref::clone(&nodes), *c_id, &transformed_ray))
             .filter(|child| child.is_some())
             .map(|child| child.unwrap())
             .fold(None, |min, child| match min {
@@ -143,10 +155,10 @@ impl Intersect for SceneNode {
                 ),
             });
 
-        match (self_collides, min) {
+        match (self_intersects, min) {
             (None, None) => None,
-            (Some(a), None) => Some(a.apply_transform(&self.transform, &self.inv_transform)),
-            (None, Some(a)) => Some(a.apply_transform(&self.transform, &self.inv_transform)),
+            (Some(a), None) => Some(a.apply_transform(&n.transform, &n.inv_transform)),
+            (None, Some(a)) => Some(a.apply_transform(&n.transform, &n.inv_transform)),
             (Some(a), Some(b)) => Some(
                 (if distance_squared(&a.point, &transformed_ray.src)
                     < distance_squared(&b.point, &transformed_ray.src)
@@ -155,14 +167,67 @@ impl Intersect for SceneNode {
                 } else {
                     b
                 })
-                .apply_transform(&self.transform, &self.inv_transform),
+                .apply_transform(&n.transform, &n.inv_transform),
             ),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SceneNode {
+    pub id: usize,
+    pub children: Vec<usize>,
+    pub transform: Affine3<f32>,
+    pub inv_transform: Affine3<f32>,
+    pub name: String,
+
+    // Material and Primitive
+    pub material: Material,
+    pub primitive: Primitive,
+}
+
+impl SceneNode {
+    pub fn new(id: usize, name: String) -> SceneNode {
+        SceneNode {
+            id,
+            children: Vec::new(),
+            transform: Affine3::identity(),
+            inv_transform: Affine3::identity(),
+            name,
+            material: Material::None,
+            primitive: Primitive::None,
+        }
+    }
+}
+
+impl Intersect for SceneNode {
+    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
+        let mut t_value: f32 = 0.0;
+        let mut normal = Vector3::new(0.0f32, 0.0, 0.0);
+        let mut uv = [0.0, 0.0];
+        if self
+            .primitive
+            .collides(&ray, &mut t_value, &mut normal, &mut uv)
+        {
+            Some(Intersection::new(
+                t_value,
+                ray.src + (t_value * ray.dir.normalize()),
+                self.id,
+                normal,
+                uv[0],
+                uv[1],
+            ))
+        } else {
+            None
         }
     }
 }
 
 impl SceneNode {
     pub fn add_child(&mut self, child: SceneNode) {
+        self.children.push(child.id);
+    }
+    pub fn add_child_id(&mut self, child: usize) {
         self.children.push(child);
     }
     pub fn scale(&mut self, x: f32, y: f32, z: f32) {

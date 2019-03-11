@@ -1,5 +1,5 @@
 use crate::geometry::{aabb_collision, Mesh, Ray};
-use nalgebra::{dot, Unit, Vector3};
+use nalgebra::{Matrix, Unit, Vector3};
 use roots::find_roots_quadratic;
 use roots::Roots;
 use std::f32;
@@ -81,9 +81,9 @@ fn sphere_collides(ray: &Ray, t_value: &mut f32, normal: &mut Vector3<f32>) -> b
     let l = &ray.src.coords;
     let udir: Unit<Vector3<f32>> = ray.unit_dir();
     let dir = udir.as_ref();
-    let a = dot(dir, dir);
-    let b = 2.0f32 * dot(l, dir);
-    let c = dot(l, l) - 1.0f32;
+    let a = Matrix::dot(dir, dir);
+    let b = 2.0f32 * Matrix::dot(l, dir);
+    let c = Matrix::dot(l, l) - 1.0f32;
 
     let closest_root = match find_roots_quadratic(a, b, c) {
         Roots::One([r1]) => r1,

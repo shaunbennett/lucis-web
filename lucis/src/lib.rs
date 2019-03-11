@@ -45,35 +45,35 @@ pub type Transform = Transform3<f32>;
 pub fn run() -> Result<(), JsValue> {
     set_panic_hook();
 
-    let raytracer: Raytracer = Default::default();
-    let mut pixels = raytracer.render(200, 200);
+    // let raytracer: Raytracer = Default::default();
+    // let mut pixels = raytracer.render(200, 200);
 
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas
-        .dyn_into::<web_sys::HtmlCanvasElement>()
-        .map_err(|_| ())
-        .unwrap();
+    // let document = web_sys::window().unwrap().document().unwrap();
+    // let canvas = document.get_element_by_id("canvas").unwrap();
+    // let canvas: web_sys::HtmlCanvasElement = canvas
+    //     .dyn_into::<web_sys::HtmlCanvasElement>()
+    //     .map_err(|_| ())
+    //     .unwrap();
 
-    let context = canvas
-        .get_context("2d")
-        .unwrap()
-        .unwrap()
-        .dyn_into::<web_sys::CanvasRenderingContext2d>()
-        .unwrap();
+    // let context = canvas
+    //     .get_context("2d")
+    //     .unwrap()
+    //     .unwrap()
+    //     .dyn_into::<web_sys::CanvasRenderingContext2d>()
+    //     .unwrap();
 
-    let mutArr: &mut [u8] = pixels.as_mut();
-    let clamped: Clamped<&mut [u8]> = Clamped(mutArr);
+    // let mutArr: &mut [u8] = pixels.as_mut();
+    // let clamped: Clamped<&mut [u8]> = Clamped(mutArr);
 
-    let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(clamped, 200, 200).unwrap();
-    context.put_image_data_with_dirty_x_and_dirty_y_and_dirty_width_and_dirty_height(&image_data, 0.0, 0.0, 0.0, 0.0, 500.0, 500.0);
+    // let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(clamped, 200, 200).unwrap();
+    // context.put_image_data_with_dirty_x_and_dirty_y_and_dirty_width_and_dirty_height(&image_data, 0.0, 0.0, 0.0, 0.0, 500.0, 500.0);
 
 //    let window = web_sys::window().expect("should have a Window");
 //    let document = window.document().expect("should have a Document");
-//
+
 //    let p: web_sys::Node = document.create_element("p")?.into();
 //    p.set_text_content(Some("Hello! Rust, WebAssembly, and Webpack!"));
-//
+
 //    let body = document.body().expect("should have a body");
 //    let body: &web_sys::Node = body.as_ref();
 //    body.append_child(&p)?;

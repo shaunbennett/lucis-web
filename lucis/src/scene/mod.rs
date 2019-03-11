@@ -11,4 +11,4 @@ mod node;
 pub use self::color::Color;
 pub use self::intersection::Intersection;
 pub use self::light::Light;
-pub use self::node::{Intersect, Material, SceneNode};
+pub use self::node::{Intersect, Material, SceneNode, Scene};
