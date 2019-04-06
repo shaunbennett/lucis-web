@@ -6,7 +6,26 @@ use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
-#[derive(Debug, Clone)]
+#[wasm_bindgen(js_name = Material)]
+pub struct MaterialWrapper {
+    pub(crate) base: Material,
+}
+
+#[wasm_bindgen(js_class = Material)]
+impl MaterialWrapper {
+    #[wasm_bindgen(constructor)]
+    pub fn new(kd: Color, ks: Color, shininess: f32) -> MaterialWrapper {
+        MaterialWrapper {
+            base: Material::PhongMaterial {
+                kd: kd,
+                ks: ks,
+                shininess: shininess,
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum Material {
     PhongMaterial {
         kd: Color,
@@ -102,6 +121,9 @@ impl SceneNodeRef {
     }
     pub fn rotate(&mut self, axis: &str, angle: f32) {
         self.parent.borrow_mut()[self.id].rotate(axis, angle);
+    }
+    pub fn set_material(&mut self, material: MaterialWrapper) {
+        self.parent.borrow_mut()[self.id].material = material.base;
     }
 }
 

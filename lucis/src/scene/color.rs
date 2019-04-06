@@ -1,6 +1,8 @@
 use nalgebra::Vector3;
 use std::ops::{Add, Div, Mul};
+use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Color {
     pub r: f32,
@@ -86,12 +88,14 @@ impl Div<f32> for Color {
     }
 }
 
+#[wasm_bindgen]
 impl Color {
+    #[wasm_bindgen(constructor)]
     pub fn new(r: f32, g: f32, b: f32) -> Color {
         Color { r, g, b }
     }
 
-    fn clamp(mut self) -> Color {
+    pub(crate) fn clamp(mut self) -> Color {
         self.r = self.r.max(0.0).min(1.0);
         self.g = self.g.max(0.0).min(1.0);
         self.b = self.b.max(0.0).min(1.0);

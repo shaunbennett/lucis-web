@@ -1,18 +1,27 @@
 /// <reference path="../lucis/pkg/lucis_bg.d.ts" />
 
-import { Scene, Raytracer } from '../lucis/pkg'
+import {
+    Scene as IScene,
+    Raytracer as IRaytracer,
+    Color as IColor,
+    Material as IMaterial,
+} from '../lucis/pkg'
 
 
 // // Initial warm_up run, makes the next run go much faster
-let iScene = new Scene()
+let iScene = new IScene()
 let ia = iScene.create_node('a')
-let ir = new Raytracer(iScene)
+let ir = new IRaytracer(iScene)
 ir.render(1, 1)
+ia.free()
+ir.free()
 
 let renderBtn = document.getElementById("btn-render")
 renderBtn.addEventListener('click', () => {
-    let MyScene = Scene;
-    let MyTracer = Raytracer;
+    let Scene = IScene;
+    let Raytracer = IRaytracer;
+    let Color = IColor;
+    let Material = IMaterial;
     let textAreaCode = document.getElementById("code-box").value
     eval(textAreaCode)
 })

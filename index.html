@@ -22,17 +22,23 @@
       <!-- <p id="progress">Loading...</p> -->
       <div id="raytracer">
         <div id="editor" class="fill-outer">
-          <textarea id="code-box" class="fill-outer">
-let test_scene = new MyScene()
+<textarea id="code-box" class="fill-outer">
+let test_scene = new Scene()
+
+let white = new Color(1, 1, 1)
+let green = new Color(0, 1, 0)
+
+let greenMat = new Material(green, white, 10)
 
 let a = test_scene.create_node('a')
 
 a.scale(0.5, 3, 0.5)
 a.translate(0, 0, -10)
+a.set_material(greenMat)
 
-let raytracer = new MyTracer(test_scene)
+let raytracer = new Raytracer(test_scene)
 raytracer.render(600, 600)
-          </textarea>
+</textarea>
           <button id="btn-render">Render...</button>
         </div>
         <div id="renderer" class="fill-outer">
