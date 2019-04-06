@@ -6,7 +6,14 @@ import {
     Color as IColor,
     Material as IMaterial,
 } from '../lucis/pkg'
-
+import * as ace from 'brace'
+import 'brace/mode/javascript'
+import 'brace/theme/tomorrow_night_eighties'
+let editor = ace.edit('code-box');
+editor.getSession().setMode('ace/mode/javascript');
+editor.getSession().$worker.send("changeOptions", [{asi: true}]);
+editor.setTheme('ace/theme/tomorrow_night_eighties');
+editor.session.addGutterDecoration
 
 // // Initial warm_up run, makes the next run go much faster
 let iScene = new IScene()
@@ -16,14 +23,47 @@ ir.render(1, 1)
 ia.free()
 ir.free()
 
+function getLineNumber(err) {
+    if (err.lineNumber) {
+        return err.lineNumber
+    } else {
+        try {
+            var caller_line = err.stack.split("\n")[1]
+            var index = caller_line.indexOf("<anonymous>:")
+            var nums = caller_line.slice(index+12, caller_line.length).split(/[:\)]/)
+            var lineNumber = +nums[0]
+            var columnNumber = +nums[1]
+            return lineNumber
+        } catch(e) {
+            return NaN
+        }
+    }
+}
+
 let renderBtn = document.getElementById("btn-render")
 renderBtn.addEventListener('click', () => {
     let Scene = IScene;
     let Raytracer = IRaytracer;
     let Color = IColor;
     let Material = IMaterial;
-    let textAreaCode = document.getElementById("code-box").value
-    eval(textAreaCode)
+    let errorTextNode = document.getElementById("error-text")
+    try {
+        errorTextNode.innerText = ""
+        editor.getSession().clearAnnotations();
+        eval(editor.getSession().getValue())
+    } catch(err) {
+        let lineNumber = getLineNumber(err)
+        if (lineNumber) {
+            let annotation = {
+                row: lineNumber - 1,
+                column: 0, // Seems to not be very useful
+                text: err.name + ' - ' + err.message,
+                type: 'error'
+            }
+            errorTextNode.innerText = err
+            editor.getSession().setAnnotations([annotation]);
+        }
+    }
 })
 
 

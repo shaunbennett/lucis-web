@@ -11,7 +11,8 @@
       width: 100vw;
     }
     #canvas {
-      padding-left: 20px;
+      margin-left: 18px;
+      margin-top: 12px;
     }
     .fill-outer {
       height: 100%;
@@ -22,7 +23,7 @@
       <!-- <p id="progress">Loading...</p> -->
       <div id="raytracer">
         <div id="editor" class="fill-outer">
-<textarea id="code-box" class="fill-outer">
+<pre id="code-box" class="fill-outer">
 let test_scene = new Scene()
 
 let white = new Color(1, 1, 1)
@@ -38,7 +39,8 @@ a.set_material(greenMat)
 
 let raytracer = new Raytracer(test_scene)
 raytracer.render(600, 600)
-</textarea>
+</pre>
+          <div id="error-text"></div>
           <button id="btn-render">Render...</button>
         </div>
         <div id="renderer" class="fill-outer">
