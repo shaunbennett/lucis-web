@@ -21,5 +21,8 @@ module.exports = {
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, "lucis")
     }),
-  ]
+  ],
+  optimization: {
+    minimize: false,
+  }
 };

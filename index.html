@@ -4,8 +4,41 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     <title>Lucis Web</title>
   </head>
+  <style>
+    #raytracer {
+      display: flex;
+      height: 80vh;
+      width: 100vw;
+    }
+    #canvas {
+      padding-left: 20px;
+    }
+    .fill-outer {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
   <body>
-      <canvas id="canvas" ></canvas>
+      <!-- <p id="progress">Loading...</p> -->
+      <div id="raytracer">
+        <div id="editor" class="fill-outer">
+          <textarea id="code-box" class="fill-outer">
+let test_scene = new MyScene()
+
+let a = test_scene.create_node('a')
+
+a.scale(0.5, 3, 0.5)
+a.translate(0, 0, -10)
+
+let raytracer = new MyTracer(test_scene)
+raytracer.render(600, 600)
+          </textarea>
+          <button id="btn-render">Render...</button>
+        </div>
+        <div id="renderer" class="fill-outer">
+          <canvas id="canvas" ></canvas>
+        </div>
+      </div>
   </body>
 </html>
 
