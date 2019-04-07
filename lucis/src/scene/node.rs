@@ -7,6 +7,7 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Material)]
+#[derive(Debug, Clone, Copy)]
 pub struct MaterialWrapper {
     pub(crate) base: Material,
 }
@@ -14,11 +15,11 @@ pub struct MaterialWrapper {
 #[wasm_bindgen(js_class = Material)]
 impl MaterialWrapper {
     #[wasm_bindgen(constructor)]
-    pub fn new(kd: Color, ks: Color, shininess: f32) -> MaterialWrapper {
+    pub fn new(kd: &Color, ks: &Color, shininess: f32) -> MaterialWrapper {
         MaterialWrapper {
             base: Material::PhongMaterial {
-                kd: kd,
-                ks: ks,
+                kd: *kd,
+                ks: *ks,
                 shininess: shininess,
             }
         }
@@ -122,7 +123,7 @@ impl SceneNodeRef {
     pub fn rotate(&mut self, axis: &str, angle: f32) {
         self.parent.borrow_mut()[self.id].rotate(axis, angle);
     }
-    pub fn set_material(&mut self, material: MaterialWrapper) {
+    pub fn set_material(&mut self, material: &MaterialWrapper) {
         self.parent.borrow_mut()[self.id].material = material.base;
     }
 }
@@ -137,10 +138,10 @@ impl Scene {
         }
     }
 
-    pub fn create_node(&mut self, name: String) -> SceneNodeRef {
+    pub fn create_node(&mut self, primitive: Primitive, name: String) -> SceneNodeRef {
         let id = self.nodes.borrow().len();
         let mut node = SceneNode::new(id, name);
-        node.primitive = Primitive::Sphere;
+        node.primitive = primitive;
         // rt.material({0.9, 0.8, 0.4}, {0.8, 0.8, 0.4}, 25)
         node.material = Material::phong(Color::new(0.96, 0.37, 0.1), Color::new(0.7, 0.7, 0.7), 6.0);
         self.nodes.borrow_mut().push(node);

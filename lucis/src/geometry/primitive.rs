@@ -3,6 +3,7 @@ use nalgebra::{Matrix, Unit, Vector3};
 use roots::find_roots_quadratic;
 use roots::Roots;
 use std::f32;
+use wasm_bindgen::prelude::*;
 
 const SPHERE_EPS: f32 = 0.0001;
 const CYLINDER_EPS: f32 = 0.0001;
@@ -10,13 +11,14 @@ const CONE_EPS: f32 = 0.001;
 const CLOSE_EPS: f32 = 0.001;
 const TRIANGLE_EPS: f32 = 0.0000001;
 
+#[wasm_bindgen]
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Primitive {
     Sphere,
     Cube,
     Cylinder,
     Cone,
-    Mesh(Mesh),
+    // Mesh(Mesh),
     None,
 }
 
@@ -33,7 +35,7 @@ impl Primitive {
             Primitive::Cylinder => cylinder_collides(ray, t_value, normal, uv),
             Primitive::Cone => cone_collides(ray, t_value, normal),
             Primitive::Cube => cube_collides(ray, t_value, normal),
-            Primitive::Mesh(mesh) => mesh_collides(ray, mesh, t_value, normal, uv),
+            // Primitive::Mesh(mesh) => mesh_collides(ray, mesh, t_value, normal, uv),
             _ => false,
         }
     }
@@ -254,45 +256,45 @@ fn cylinder_collides(
     }
 }
 
-fn mesh_collides(
-    ray: &Ray,
-    mesh: &Mesh,
-    t_value: &mut f32,
-    normal: &mut Vector3<f32>,
-    uv: &mut [f32; 2],
-) -> bool {
-    if aabb_collision(ray, &mesh.aabb_corner, &mesh.aabb_size) == Roots::No([]) {
-        return false;
-    }
+// fn mesh_collides(
+//     ray: &Ray,
+//     mesh: &Mesh,
+//     t_value: &mut f32,
+//     normal: &mut Vector3<f32>,
+//     uv: &mut [f32; 2],
+// ) -> bool {
+//     if aabb_collision(ray, &mesh.aabb_corner, &mesh.aabb_size) == Roots::No([]) {
+//         return false;
+//     }
 
-    let mut smallest_t = f32::MAX;
-    let mut smallest_normal = Vector3::new(0.0f32, 0.0f32, 0.0f32);
-    let mut triangle = [smallest_normal, smallest_normal, smallest_normal];
+//     let mut smallest_t = f32::MAX;
+//     let mut smallest_normal = Vector3::new(0.0f32, 0.0f32, 0.0f32);
+//     let mut triangle = [smallest_normal, smallest_normal, smallest_normal];
 
-    for face in mesh.faces.iter() {
-        triangle[0] = mesh.vertices[face[0]];
-        triangle[1] = mesh.vertices[face[1]];
-        triangle[2] = mesh.vertices[face[2]];
+//     for face in mesh.faces.iter() {
+//         triangle[0] = mesh.vertices[face[0]];
+//         triangle[1] = mesh.vertices[face[1]];
+//         triangle[2] = mesh.vertices[face[2]];
 
-        if triangle_collides(ray, &triangle, t_value, normal) {
-            if *t_value < smallest_t {
-                smallest_t = *t_value;
-                smallest_normal = *normal;
-            }
-        }
-    }
+//         if triangle_collides(ray, &triangle, t_value, normal) {
+//             if *t_value < smallest_t {
+//                 smallest_t = *t_value;
+//                 smallest_normal = *normal;
+//             }
+//         }
+//     }
 
-    if smallest_t < f32::MAX {
-        let intersect = ray.src + (smallest_t * ray.dir);
-        if intersect.x < 0.0 {
-            uv[0] = 1.0 - intersect.x;
-        } else {
-            uv[0] = intersect.x;
-        }
-        uv[1] = intersect.z;
-    }
+//     if smallest_t < f32::MAX {
+//         let intersect = ray.src + (smallest_t * ray.dir);
+//         if intersect.x < 0.0 {
+//             uv[0] = 1.0 - intersect.x;
+//         } else {
+//             uv[0] = intersect.x;
+//         }
+//         uv[1] = intersect.z;
+//     }
 
-    *normal = smallest_normal;
-    *t_value = smallest_t;
-    smallest_t < f32::MAX
-}
+//     *normal = smallest_normal;
+//     *t_value = smallest_t;
+//     smallest_t < f32::MAX
+// }

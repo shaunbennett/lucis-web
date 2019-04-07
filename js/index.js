@@ -5,6 +5,7 @@ import {
     Raytracer as IRaytracer,
     Color as IColor,
     Material as IMaterial,
+    Primitive as IPrimitive,
 } from '../lucis/pkg'
 import * as ace from 'brace'
 import 'brace/mode/javascript'
@@ -46,6 +47,7 @@ renderBtn.addEventListener('click', () => {
     let Raytracer = IRaytracer;
     let Color = IColor;
     let Material = IMaterial;
+    let Primitive = IPrimitive;
     let errorTextNode = document.getElementById("error-text")
     try {
         errorTextNode.innerText = ""
